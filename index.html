@@ -60,14 +60,17 @@
     /* ВРЕМЯ */
     .time{
       font-weight:100;
-      font-size: min(10vh, 84px);
+      font-size: min(9vh, 76px);
       display:flex;
       justify-content:center;
       align-items:flex-end;
-      margin: 0 auto;
+      margin: 60px auto 20px auto; /* опустили ниже */
+      letter-spacing: -1px; /* символы ближе */
+      width: calc(100% - 68px); /* ровно по ширине кнопок */
+      text-align:center;
     }
-    .time span{display:inline-block; min-width:1ch; text-align:center;}
-    .comma{padding:0 4px; position:relative; top:-4px;}
+    .time span{display:inline-block; min-width:1ch;}
+    .comma{padding:0 2px; position:relative; top:-4px;}
 
     /* КНОПКИ */
     .controls{
@@ -75,11 +78,11 @@
       display:flex;
       justify-content:space-between;
       align-items:center;
-      padding: 0 34px; /* шире на 7% */
+      padding: 0 34px;
       position: relative;
     }
     .btn{
-      width:84px; height:84px; /* +8% */
+      width:84px; height:84px;
       border-radius:50%;
       display:flex; align-items:center; justify-content:center;
       font-size:18px;
@@ -112,19 +115,19 @@
 
     /* ЛАП-ТАБЛИЦА */
     .laps{
-      margin: 8px 34px 0 34px;
+      margin: 0 34px; /* сразу под кнопками */
       color:#e5e5ea;
       font-size:20px;
       max-height: 32vh;
       overflow:auto;
       scrollbar-width: none;
-      border-top: 1px solid #1c1c1e; /* верхняя линия всегда */
-      min-height: 44px; /* резервируем место */
+      border-top: 1px solid #1c1c1e; /* линия рядом с кнопками */
+      min-height: 44px;
     }
     .laps.empty::after{
       content:"";
       display:block;
-      height:34px; /* пустая строка для выравнивания */
+      height:34px;
     }
     .lap-row{
       display:flex; justify-content:space-between; padding:10px 0;

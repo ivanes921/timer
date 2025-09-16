@@ -52,9 +52,15 @@
       height:100%;
       display:flex;
       flex-direction:column;
-      justify-content:space-between;
       padding-top: max(24px, env(safe-area-inset-top));
       padding-bottom: calc(78px + env(safe-area-inset-bottom));
+    }
+
+    .top{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      margin-bottom: 6px; /* расстояние до линии */
     }
 
     /* ВРЕМЯ */
@@ -64,9 +70,9 @@
       display:flex;
       justify-content:center;
       align-items:flex-end;
-      margin: 60px auto 10px auto; /* ближе к кнопкам */
+      margin: 0 auto 8px auto; /* ближе к кнопкам */
       letter-spacing: -1px;
-      width: calc(100% - 60px); /* шире на ~2-3% */
+      width: calc(100% - 60px);
       text-align:center;
     }
     .time span{display:inline-block; min-width:1ch;}
@@ -78,7 +84,7 @@
       display:flex;
       justify-content:space-between;
       align-items:center;
-      padding: 0 30px; /* чуть шире */
+      padding: 0 30px; /* ширина как у циферблата */
       position: relative;
     }
     .btn{
@@ -142,7 +148,7 @@
       background:#000;
       display:flex; justify-content:space-between; align-items:center;
       font-size:12px; color:#b0b0b0;
-      padding: 0 30px; /* шире */
+      padding: 0 30px;
     }
     .tab{height:100%; display:flex; flex-direction:column;
       align-items:center; justify-content:center; gap:4px; user-select:none;}
@@ -152,14 +158,16 @@
 </head>
 <body>
   <div class="app">
-    <div class="time">
-      <span id="mm">00</span><span class="comma">:</span><span id="ss">00</span><span class="comma">,</span><span id="cc">00</span>
-    </div>
+    <div class="top">
+      <div class="time">
+        <span id="mm">00</span><span class="comma">:</span><span id="ss">00</span><span class="comma">,</span><span id="cc">00</span>
+      </div>
 
-    <div class="controls">
-      <div id="leftBtn" class="btn circle">Круг</div>
-      <div class="dots"><div class="dot"></div><div class="dot dim"></div></div>
-      <div id="rightBtn" class="btn green">Старт</div>
+      <div class="controls">
+        <div id="leftBtn" class="btn circle">Круг</div>
+        <div class="dots"><div class="dot"></div><div class="dot dim"></div></div>
+        <div id="rightBtn" class="btn green">Старт</div>
+      </div>
     </div>
 
     <div id="laps" class="laps empty"></div>

@@ -64,9 +64,9 @@
       display:flex;
       justify-content:center;
       align-items:flex-end;
-      margin: 60px auto 20px auto; /* опустили ниже */
-      letter-spacing: -1px; /* символы ближе */
-      width: calc(100% - 68px); /* ровно по ширине кнопок */
+      margin: 60px auto 10px auto; /* ближе к кнопкам */
+      letter-spacing: -1px;
+      width: calc(100% - 60px); /* шире на ~2-3% */
       text-align:center;
     }
     .time span{display:inline-block; min-width:1ch;}
@@ -78,7 +78,7 @@
       display:flex;
       justify-content:space-between;
       align-items:center;
-      padding: 0 34px;
+      padding: 0 30px; /* чуть шире */
       position: relative;
     }
     .btn{
@@ -115,13 +115,13 @@
 
     /* ЛАП-ТАБЛИЦА */
     .laps{
-      margin: 0 34px; /* сразу под кнопками */
+      margin: 6px 30px 0 30px; /* максимально близко к кнопкам */
       color:#e5e5ea;
       font-size:20px;
       max-height: 32vh;
       overflow:auto;
       scrollbar-width: none;
-      border-top: 1px solid #1c1c1e; /* линия рядом с кнопками */
+      border-top: 1px solid #1c1c1e;
       min-height: 44px;
     }
     .laps.empty::after{
@@ -142,7 +142,7 @@
       background:#000;
       display:flex; justify-content:space-between; align-items:center;
       font-size:12px; color:#b0b0b0;
-      padding: 0 34px;
+      padding: 0 30px; /* шире */
     }
     .tab{height:100%; display:flex; flex-direction:column;
       align-items:center; justify-content:center; gap:4px; user-select:none;}

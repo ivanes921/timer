@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no" />
+  <title>Секундомер</title>
+
+  <!-- PWA + iOS -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="apple-touch-icon" href="icons/icon-180.png">
+  <link rel="manifest" href="manifest.webmanifest">
+
+  <style>
+    @font-face{
+      font-family: "SFProDisplayThin";
+      src: url("./fonts/SF-Pro-Display-Thin.woff") format("woff");
+      font-weight: 100;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    :root{
+      --bg:#000;
+      --fg:#fff;
+
+      --btn-circle:#1c1c1e;
+      --btn-circle-text:#98989f;
+      --btn-circle-pressed:#101010;
+
+      --btn-circle-active:#343434;
+      --btn-circle-active-text:#ffffff;
+      --btn-circle-active-pressed:#1b1b1b;
+
+      --btn-reset:#343434;
+      --btn-reset-text:#ffffff;
+      --btn-reset-pressed:#101010;
+
+      --btn-start:#092911;
+      --btn-start-text:#4dc77c;
+      --btn-start-pressed:#061609;
+
+      --btn-stop:#340e0d;
+      --btn-stop-text:#be5046;
+      --btn-stop-pressed:#1b0706;
+    }
+
+    *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
+    html,body{height:100%; margin:0; background:var(--bg); color:var(--fg); font-family:"SFProDisplayThin", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;}
+
+    .app{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      justify-content:space-between;
+      padding-top: max(24px, env(safe-area-inset-top));
+      padding-bottom: calc(78px + env(safe-area-inset-bottom));
+    }
+
+    /* ВРЕМЯ */
+    .time{
+      font-weight:100;
+      font-size: min(10vh, 84px);
+      display:flex;
+      justify-content:center;
+      align-items:flex-end;
+      margin: 0 auto;
+    }
+    .time span{display:inline-block; min-width:1ch; text-align:center;}
+    .comma{padding:0 4px; position:relative; top:-4px;}
+
+    /* КНОПКИ */
+    .controls{
+      width:100%;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding: 0 34px; /* шире на 7% */
+      position: relative;
+    }
+    .btn{
+      width:84px; height:84px; /* +8% */
+      border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      font-size:18px;
+      user-select:none;
+    }
+
+    .btn.circle{ background:var(--btn-circle); color:var(--btn-circle-text);}
+    .btn.circle:active{ background:var(--btn-circle-pressed); }
+
+    .btn.circle-active{ background:var(--btn-circle-active); color:var(--btn-circle-active-text);}
+    .btn.circle-active:active{ background:var(--btn-circle-active-pressed); }
+
+    .btn.reset{ background:var(--btn-reset); color:var(--btn-reset-text);}
+    .btn.reset:active{ background:var(--btn-reset-pressed); }
+
+    .btn.green{ background:var(--btn-start); color:var(--btn-start-text);}
+    .btn.green:active{ background:var(--btn-start-pressed); }
+
+    .btn.red{ background:var(--btn-stop); color:var(--btn-stop-text);}
+    .btn.red:active{ background:var(--btn-stop-pressed); }
+
+    .dots{
+      position:absolute;
+      left:50%;
+      transform:translateX(-50%);
+      display:flex; gap:10px; top:50%;
+    }
+    .dot{width:8px; height:8px; border-radius:50%; background:#d9d9d9;}
+    .dot.dim{opacity:.45;}
+
+    /* ЛАП-ТАБЛИЦА */
+    .laps{
+      margin: 8px 34px 0 34px;
+      color:#e5e5ea;
+      font-size:20px;
+      max-height: 32vh;
+      overflow:auto;
+      scrollbar-width: none;
+      border-top: 1px solid #1c1c1e; /* верхняя линия всегда */
+      min-height: 44px; /* резервируем место */
+    }
+    .laps.empty::after{
+      content:"";
+      display:block;
+      height:34px; /* пустая строка для выравнивания */
+    }
+    .lap-row{
+      display:flex; justify-content:space-between; padding:10px 0;
+      border-bottom:1px solid #1c1c1e;
+    }
+
+    /* ТАББАР */
+    .tabbar{
+      position:fixed; left:0; right:0; bottom:0;
+      height:78px;
+      padding-bottom: env(safe-area-inset-bottom);
+      background:#000;
+      display:flex; justify-content:space-between; align-items:center;
+      font-size:12px; color:#b0b0b0;
+      padding: 0 34px;
+    }
+    .tab{height:100%; display:flex; flex-direction:column;
+      align-items:center; justify-content:center; gap:4px; user-select:none;}
+    .tab .icon{font-size:24px; transition: transform .18s ease;}
+    .tab.active .label{color:#fff;}
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="time">
+      <span id="mm">00</span><span class="comma">:</span><span id="ss">00</span><span class="comma">,</span><span id="cc">00</span>
+    </div>
+
+    <div class="controls">
+      <div id="leftBtn" class="btn circle">Круг</div>
+      <div class="dots"><div class="dot"></div><div class="dot dim"></div></div>
+      <div id="rightBtn" class="btn green">Старт</div>
+    </div>
+
+    <div id="laps" class="laps empty"></div>
+  </div>
+
+  <!-- ТАББАР -->
+  <nav class="tabbar">
+    <div id="tab-world" class="tab">
+      <div class="icon" id="icon-world">🌐</div>
+      <div class="label">Мировые часы</div>
+    </div>
+    <div class="tab"><div class="icon">⏰</div><div class="label">Будильники</div></div>
+    <div class="tab active"><div class="icon">⏱️</div><div class="label">Секундомер</div></div>
+    <div id="tab-timer" class="tab"><div class="icon">⏲️</div><div class="label">Таймеры</div></div>
+  </nav>
+
+  <script>
+    let secretDigits = [];
+    let secretIndex = 0;
+    let secretMode = false;
+
+    const mmEl = document.getElementById("mm");
+    const ssEl = document.getElementById("ss");
+    const ccEl = document.getElementById("cc");
+    const leftBtn = document.getElementById("leftBtn");
+    const rightBtn = document.getElementById("rightBtn");
+    const lapsBox = document.getElementById("laps");
+    const worldTab = document.getElementById("tab-world");
+    const worldIcon = document.getElementById("icon-world");
+    const timerTab = document.getElementById("tab-timer");
+
+    let running = false;
+    let startTs = 0;
+    let elapsed = 0;
+    let rafId = null;
+    let lapCount = 0;
+
+    function fmt2(n){ return n<10 ? "0"+n : ""+n; }
+
+    function render(ms){
+      const total = Math.max(0, ms|0);
+      const minutes = Math.floor(total / 60000);
+      const seconds = Math.floor((total % 60000) / 1000);
+      const centis  = Math.floor((total % 1000) / 10);
+
+      mmEl.textContent = fmt2(minutes);
+      ssEl.textContent = fmt2(seconds);
+      ccEl.textContent = fmt2(centis);
+
+      if(lapCount>0){
+        const lastRow = lapsBox.firstChild;
+        if(lastRow){
+          lastRow.querySelector(".time-val").textContent = `${fmt2(minutes)}:${fmt2(seconds)},${fmt2(centis)}`;
+        }
+      }
+    }
+    render(0);
+
+    function tick(){
+      const now = performance.now();
+      const ms = elapsed + (now - startTs);
+      render(ms);
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function start(){
+      if(running) return;
+      running = true;
+      startTs = performance.now();
+      rightBtn.textContent = "Стоп";
+      rightBtn.className = "btn red";
+      leftBtn.textContent = "Круг";
+      leftBtn.className = "btn circle-active";
+      lapsBox.classList.remove("empty");
+
+      if(lapCount === 0){
+        lapCount = 1;
+        const row = document.createElement("div");
+        row.className = "lap-row";
+        row.innerHTML = `<div>Круг ${lapCount}</div><div class="time-val">00:00,00</div>`;
+        lapsBox.prepend(row);
+      }
+
+      if(!rafId) rafId = requestAnimationFrame(tick);
+    }
+
+    function stop(){
+      if(!running) return;
+      running = false;
+      cancelAnimationFrame(rafId); rafId = null;
+      const now = performance.now();
+      elapsed += now - startTs;
+
+      if(secretMode && secretDigits.length){
+        const total = Math.max(0, elapsed|0);
+        const minutes = Math.floor(total / 60000);
+        const seconds = Math.floor((total % 60000) / 1000);
+        const forced = secretDigits[secretIndex % secretDigits.length];
+        secretIndex++;
+        mmEl.textContent = fmt2(minutes);
+        ssEl.textContent = fmt2(seconds);
+        ccEl.textContent = forced;
+      }else{
+        render(elapsed);
+      }
+
+      rightBtn.textContent = "Старт";
+      rightBtn.className = "btn green";
+      leftBtn.textContent = "Сброс";
+      leftBtn.className = "btn reset";
+    }
+
+    function resetAll(){
+      running = false;
+      cancelAnimationFrame(rafId); rafId = null;
+      startTs = 0; elapsed = 0; lapCount = 0;
+      lapsBox.innerHTML = "";
+      lapsBox.classList.add("empty");
+      rightBtn.textContent = "Старт";
+      rightBtn.className = "btn green";
+      leftBtn.textContent = "Круг";
+      leftBtn.className = "btn circle";
+      render(0);
+    }
+
+    function addLap(){
+      if(!running) return;
+      lapCount++;
+      const now = performance.now();
+      const ms = elapsed + (now - startTs);
+      const minutes = Math.floor(ms / 60000);
+      const seconds = Math.floor((ms % 60000) / 1000);
+      const centis  = Math.floor((ms % 1000) / 10);
+      const row = document.createElement("div");
+      row.className = "lap-row";
+      row.innerHTML = `<div>Круг ${lapCount}</div><div class="time-val">${fmt2(minutes)}:${fmt2(seconds)},${fmt2(centis)}</div>`;
+      lapsBox.prepend(row);
+    }
+
+    rightBtn.addEventListener("click", ()=> running ? stop() : start());
+    leftBtn.addEventListener("click", ()=> running ? addLap() : resetAll());
+
+    worldTab.addEventListener("click", ()=>{
+      secretMode = !secretMode;
+      worldIcon.style.transform = secretMode ? "rotate(90deg)" : "rotate(0deg)";
+    });
+
+    timerTab.addEventListener("click", ()=>{
+      const raw = window.prompt("Введите секретную последовательность (например 123456)", "") || "";
+      const digits = raw.replace(/\D/g,"");
+      secretDigits = [];
+      secretIndex = 0;
+      if(digits.length >= 2){
+        const even = digits.length % 2 === 0 ? digits : (digits + "0");
+        for(let i=0;i<even.length;i+=2){
+          secretDigits.push(even.slice(i, i+2));
+        }
+      }
+    });
+
+    if("serviceWorker" in navigator){
+      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    }
+  </script>
+</body>
+</html>

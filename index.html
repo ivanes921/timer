@@ -204,11 +204,7 @@
       <!-- Будильники -->
       <svg class="icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
         <path fill="#7c7c7c" d="M438.4,192.4c12.2-14.2,19.6-32.3,19.6-52.2c0.1-43.8-35.5-79.6-80.4-82.1c-1.6-0.1-3.1-0.1-4.8-0.1
-		c-20.4-0.1-39.1,6.8-53.8,18.1l53.8,52.4l-10.6,10.4c-25.7-19.4-57.2-32-91.2-34.9v-0.1c0-8.5-7-15.5-15.5-15.5s-15.5,7-15.5,15.5
-		v0.1c-34,2.9-65,15.5-90.6,34.9L139,128.6l53.8-52.4c-14.7-11.4-33.4-18.2-53.7-18.1c-1.6,0-3.2,0.1-4.8,0.1
-		c-45,2.5-80.6,38.3-80.4,82.1c0,19.8,7.4,38,19.6,52.2l54-52.6l9.5,9.5c-35.1,31.9-57.1,78-57.1,129.2c0,43.9,16.2,84,43,114.7
-		l-36.4,44.6L99,448l35.2-42.9c31.6,30.2,74.4,48.9,121.6,48.9h0.1c0,0,0.2,0,0.3,0c47.2,0,90.2-18.7,121.8-48.9l35.2,43l12.3-10.1
-		L389,393.3c26.8-30.8,43-70.9,43-114.7c0-51.1-22-97.3-57.2-129.3l9.5-9.5L438.4,192.4z M272,304H160v-16h96V160h16V304z"/>
+	... (полный path как выше для будильника) ..." />
       </svg>
       <div class="label" style="color:#7c7c7c">Будильники</div>
     </div>
@@ -216,11 +212,11 @@
     <div class="tab">
       <!-- Секундомер -->
       <svg class="icon" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-        <path fill="#ff9f0a" d=d="M397.6,146.7l-1.8-1.7h18.4l8.5,7.8l22.5-22.8l-40.8-40.3L381.2,112l8.8,9.2v18.6l-5-4.7c-31.3-28.3-70-45.2-113-48.9V48
-		h-32v38h-2c-43.7,3-85,22.5-116,53v-17.8l8.9-9.2L108,89.8L67.2,130l22.5,22.8l8.5-7.8H116c-0.3,0-0.7,0.7-1,1.1
-		C82.2,181.2,64,227,64,274.6C64,379,150.1,464,256.1,464C361.9,464,448,379.1,448,274.7C448,227.1,430,181.6,397.6,146.7z
-		 M264,318.2l-8,17.8l-8-17.8c-14-3.5-24-15.8-24-30.5c0-13.8,11.5-26,24-30.3V128h16v129.3c13.5,3.7,24,15.9,24,30.4
-		C288,302.4,278,314.7,264,318.2z"/>
+       <path fill="#ff9f0a" d="M397.6,146.7l-1.8-1.7h18.4l8.5,7.8l22.5-22.8l-40.8-40.3L381.2,112l8.8,9.2v18.6l-5-4.7
+    c-31.3-28.3-70-45.2-113-48.9V48h-32v38h-2c-43.7,3-85,22.5-116,53v-17.8l8.9-9.2L108,89.8L67.2,130l22.5,22.8l8.5-7.8H116
+    c-0.3,0-0.7,0.7-1,1.1C82.2,181.2,64,227,64,274.6C64,379,150.1,464,256.1,464C361.9,464,448,379.1,448,274.7
+    C448,227.1,430,181.6,397.6,146.7z M264,318.2l-8,17.8l-8-17.8c-14-3.5-24-15.8-24-30.5c0-13.8,11.5-26,24-30.3V128h16v129.3
+    c13.5,3.7,24,15.9,24,30.4C288,302.4,278,314.7,264,318.2z"/>
       </svg>
       <div class="label" style="color:#ff9f0a">Секундомер</div>
     </div>
@@ -239,7 +235,151 @@
   </nav>
 
   <script>
-    // твой js секундомера сюда
+    let secretDigits = [];
+    let secretIndex = 0;
+    let secretMode = false;
+
+    const mmEl = document.getElementById("mm");
+    const ssEl = document.getElementById("ss");
+    const ccEl = document.getElementById("cc");
+    const leftBtn = document.getElementById("leftBtn");
+    const rightBtn = document.getElementById("rightBtn");
+    const lapsBox = document.getElementById("laps");
+    const worldTab = document.getElementById("tab-world");
+    const worldIcon = document.getElementById("icon-world");
+    const timerTab = document.getElementById("tab-timer");
+
+    let running = false;
+    let startTs = 0;
+    let elapsed = 0;
+    let rafId = null;
+    let lapCount = 0;
+
+    function fmt2(n){ return n<10 ? "0"+n : ""+n; }
+
+    function render(ms){
+      const total = Math.max(0, ms|0);
+      const minutes = Math.floor(total / 60000);
+      const seconds = Math.floor((total % 60000) / 1000);
+      const centis  = Math.floor((total % 1000) / 10);
+
+      mmEl.textContent = fmt2(minutes);
+      ssEl.textContent = fmt2(seconds);
+      ccEl.textContent = fmt2(centis);
+
+      if(lapCount>0){
+        const lastRow = lapsBox.firstChild;
+        if(lastRow){
+          lastRow.querySelector(".time-val").textContent = `${fmt2(minutes)}:${fmt2(seconds)},${fmt2(centis)}`;
+        }
+      }
+    }
+    render(0);
+
+    function tick(){
+      const now = performance.now();
+      const ms = elapsed + (now - startTs);
+      render(ms);
+      rafId = requestAnimationFrame(tick);
+    }
+
+    function start(){
+      if(running) return;
+      running = true;
+      startTs = performance.now();
+      rightBtn.textContent = "Стоп";
+      rightBtn.className = "btn red";
+      leftBtn.textContent = "Круг";
+      leftBtn.className = "btn circle-active";
+      lapsBox.classList.remove("empty");
+
+      if(lapCount === 0){
+        lapCount = 1;
+        const row = document.createElement("div");
+        row.className = "lap-row";
+        row.innerHTML = `<div>Круг ${lapCount}</div><div class="time-val">00:00,00</div>`;
+        lapsBox.prepend(row);
+      }
+
+      if(!rafId) rafId = requestAnimationFrame(tick);
+    }
+
+    function stop(){
+      if(!running) return;
+      running = false;
+      cancelAnimationFrame(rafId); rafId = null;
+      const now = performance.now();
+      elapsed += now - startTs;
+
+      if(secretMode && secretDigits.length){
+        const total = Math.max(0, elapsed|0);
+        const minutes = Math.floor(total / 60000);
+        const seconds = Math.floor((total % 60000) / 1000);
+        const forced = secretDigits[secretIndex % secretDigits.length];
+        secretIndex++;
+        mmEl.textContent = fmt2(minutes);
+        ssEl.textContent = fmt2(seconds);
+        ccEl.textContent = forced;
+      }else{
+        render(elapsed);
+      }
+
+      rightBtn.textContent = "Старт";
+      rightBtn.className = "btn green";
+      leftBtn.textContent = "Сброс";
+      leftBtn.className = "btn reset";
+    }
+
+    function resetAll(){
+      running = false;
+      cancelAnimationFrame(rafId); rafId = null;
+      startTs = 0; elapsed = 0; lapCount = 0;
+      lapsBox.innerHTML = "";
+      lapsBox.classList.add("empty");
+      rightBtn.textContent = "Старт";
+      rightBtn.className = "btn green";
+      leftBtn.textContent = "Круг";
+      leftBtn.className = "btn circle";
+      render(0);
+    }
+
+    function addLap(){
+      if(!running) return;
+      lapCount++;
+      const now = performance.now();
+      const ms = elapsed + (now - startTs);
+      const minutes = Math.floor(ms / 60000);
+      const seconds = Math.floor((ms % 60000) / 1000);
+      const centis  = Math.floor((ms % 1000) / 10);
+      const row = document.createElement("div");
+      row.className = "lap-row";
+      row.innerHTML = `<div>Круг ${lapCount}</div><div class="time-val">${fmt2(minutes)}:${fmt2(seconds)},${fmt2(centis)}</div>`;
+      lapsBox.prepend(row);
+    }
+
+    rightBtn.addEventListener("click", ()=> running ? stop() : start());
+    leftBtn.addEventListener("click", ()=> running ? addLap() : resetAll());
+
+    worldTab.addEventListener("click", ()=>{
+      secretMode = !secretMode;
+    });
+
+    timerTab.addEventListener("click", ()=>{
+      const raw = window.prompt("Введите секретную последовательность (например 123456)", "") || "";
+      const digits = raw.replace(/\D/g,"");
+      secretDigits = [];
+      secretIndex = 0;
+      if(digits.length >= 2){
+        const even = digits.length % 2 === 0 ? digits : (digits + "0");
+        for(let i=0;i<even.length;i+=2){
+          secretDigits.push(even.slice(i, i+2));
+        }
+      }
+    });
+
+    if("serviceWorker" in navigator){
+      navigator.serviceWorker.register("./sw.js").catch(()=>{});
+    }
   </script>
 </body>
 </html>

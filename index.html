@@ -81,8 +81,19 @@
       letter-spacing: -1px;
       width: calc(100% - 60px);
       text-align:center;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
     }
-    .time span{display:inline-block; min-width:1ch;}
+    .time span{
+      display:inline-flex;
+      justify-content:center;
+      align-items:flex-end;
+      width:1ch;
+    }
+    .time-val{
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
     .comma{padding:0 2px; position:relative; top:-4px;}
 
     /* КНОПКИ */
@@ -394,3 +405,4 @@
   </script>
 </body>
 </html>
+

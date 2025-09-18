@@ -49,6 +49,8 @@
       --btn-stop:#340e0d;
       --btn-stop-text:#be5046;
       --btn-stop-pressed:#1b0706;
+      --time-digit-spacing: clamp(0.12em, 0.9vw, 0.22em);
+      --time-cell-gap: clamp(0.18em, 1.4vw, 0.34em);
     }
 
     *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
@@ -78,7 +80,7 @@
       justify-content:center;
       align-items:flex-end;
       margin: 0 auto 80px auto;
-      letter-spacing: -1px;
+      gap: var(--time-cell-gap);
       width: calc(100% - 60px);
       text-align:center;
       font-variant-numeric: tabular-nums;
@@ -88,37 +90,26 @@
       display:inline-flex;
       justify-content:center;
       align-items:flex-end;
-      width:1ch;
+      flex: 0 0 auto;
+    }
+    .time .time-digits{
+      font-variant-numeric: inherit;
+      font-feature-settings: inherit;
+      letter-spacing: var(--time-digit-spacing);
+      flex: 0 0 calc(2ch + var(--time-digit-spacing));
+    }
+    .time .time-separator{
+      flex: 0 0 calc(0.85ch + var(--time-digit-spacing) * 0.3);
+      justify-content:center;
+      position:relative;
+      top:-4px;
     }
     .time-val{
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum" 1;
-    }/* ВРЕМЯ */
-    .time{
-      font-weight:100;
-      font-size: min(9vh, 76px);
-      display:flex;
-      justify-content:center;
-      align-items:flex-end;
-      margin: 0 auto 80px auto;
-      letter-spacing: 2px;
-      width: calc(100% - 60px);
-      text-align:center;
-      font-variant-numeric: tabular-nums;
-      font-feature-settings: "tnum" 1;
+      letter-spacing: var(--time-digit-spacing);
     }
-    .time span{
-      display:inline-flex;
-      justify-content:center;
-      align-items:flex-end;
-      width:1ch;
-    }
-    .time-val{
-      font-variant-numeric: tabular-nums;
-      font-feature-settings: "tnum" 1;
-    }
-    .comma{padding:0 2px; position:relative; top:-4px;}
-    .comma{padding:0 2px; position:relative; top:-4px;}
+
 
     /* КНОПКИ */
     .controls{
@@ -203,7 +194,11 @@
   <div class="app">
     <div class="top">
       <div class="time">
-        <span id="mm">00</span><span class="comma">:</span><span id="ss">00</span><span class="comma">,</span><span id="cc">00</span>
+        <span id="mm" class="time-digits">00</span>
+        <span class="time-separator">:</span>
+        <span id="ss" class="time-digits">00</span>
+        <span class="time-separator">,</span>
+        <span id="cc" class="time-digits">00</span>
       </div>
 
       <div class="controls">

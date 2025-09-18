@@ -93,7 +93,31 @@
     .time-val{
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum" 1;
+    }/* ВРЕМЯ */
+    .time{
+      font-weight:100;
+      font-size: min(9vh, 76px);
+      display:flex;
+      justify-content:center;
+      align-items:flex-end;
+      margin: 0 auto 80px auto;
+      letter-spacing: 2px;
+      width: calc(100% - 60px);
+      text-align:center;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
     }
+    .time span{
+      display:inline-flex;
+      justify-content:center;
+      align-items:flex-end;
+      width:1ch;
+    }
+    .time-val{
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+    }
+    .comma{padding:0 2px; position:relative; top:-4px;}
     .comma{padding:0 2px; position:relative; top:-4px;}
 
     /* КНОПКИ */
@@ -405,4 +429,5 @@
   </script>
 </body>
 </html>
+
 

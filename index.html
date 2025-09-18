@@ -46,11 +46,12 @@
       --btn-start-text:#4dc77c;
       --btn-start-pressed:#061609;
 
+
       --btn-stop:#340e0d;
       --btn-stop-text:#be5046;
       --btn-stop-pressed:#1b0706;
-      --time-digit-spacing: clamp(0.12em, 0.9vw, 0.22em);
-      --time-cell-gap: clamp(0.18em, 1.4vw, 0.34em);
+      --time-digit-spacing: clamp(0.06em, 0.45vw, 0.12em);
+      --time-cell-gap: clamp(0.12em, 0.85vw, 0.24em);
     }
 
     *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
@@ -73,6 +74,7 @@
     }
 
     /* ВРЕМЯ */
+
     .time{
       font-weight:100;
       font-size: min(9vh, 76px);
@@ -99,7 +101,7 @@
       flex: 0 0 calc(2ch + var(--time-digit-spacing));
     }
     .time .time-separator{
-      flex: 0 0 calc(0.85ch + var(--time-digit-spacing) * 0.3);
+      flex: 0 0 calc(0.78ch + var(--time-digit-spacing) * 0.25);
       justify-content:center;
       position:relative;
       top:-4px;
@@ -109,7 +111,6 @@
       font-feature-settings: "tnum" 1;
       letter-spacing: var(--time-digit-spacing);
     }
-
 
     /* КНОПКИ */
     .controls{
@@ -193,6 +194,7 @@
 <body>
   <div class="app">
     <div class="top">
+
       <div class="time">
         <span id="mm" class="time-digits">00</span>
         <span class="time-separator">:</span>
@@ -200,6 +202,7 @@
         <span class="time-separator">,</span>
         <span id="cc" class="time-digits">00</span>
       </div>
+
 
       <div class="controls">
         <div id="leftBtn" class="btn circle">Круг</div>

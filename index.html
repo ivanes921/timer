@@ -192,6 +192,68 @@
       align-items:center; justify-content:center; gap:4px; user-select:none;
     }
     .tab .icon{width:24px; height:24px;}
+
+    .secret-modal{
+      position:fixed;
+      inset:0;
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+      background:rgba(0,0,0,0.6);
+      z-index:1000;
+    }
+    .secret-modal.open{display:flex;}
+    .secret-modal-card{
+      background:#1c1c1e;
+      color:#fff;
+      border-radius:18px;
+      padding:24px;
+      width:min(360px, 100%);
+      display:flex;
+      flex-direction:column;
+      gap:18px;
+      box-shadow:0 18px 36px rgba(0,0,0,0.45);
+    }
+    .secret-title{
+      font-size:20px;
+      font-weight:600;
+      text-align:center;
+    }
+    .secret-form{display:flex; flex-direction:column; gap:18px;}
+    .secret-input{
+      width:100%;
+      border:1px solid #3a3a3c;
+      border-radius:12px;
+      padding:14px 16px;
+      background:#2c2c2e;
+      color:#fff;
+      font-size:20px;
+      text-align:center;
+      letter-spacing:4px;
+    }
+    .secret-input:focus{
+      outline:none;
+      border-color:#5a5a5f;
+      box-shadow:0 0 0 2px rgba(255,255,255,0.08);
+    }
+    .secret-actions{display:flex; justify-content:flex-end; gap:12px;}
+    .secret-btn{
+      border:none;
+      border-radius:10px;
+      padding:10px 18px;
+      font-size:16px;
+      font-weight:500;
+      cursor:pointer;
+      background:#2c2c2e;
+      color:#fff;
+    }
+    .secret-btn:active{background:#1c1c1e;}
+    .secret-btn-primary{
+      background:#0b4d1d;
+      color:#4dc77c;
+    }
+    .secret-btn-primary:active{background:#061b0c;}
   </style>
 </head>
 <body>
@@ -280,6 +342,28 @@
     </div>
   </nav>
 
+  <div id="secretModal" class="secret-modal" role="dialog" aria-modal="true" aria-labelledby="secretTitle">
+    <div class="secret-modal-card">
+      <div id="secretTitle" class="secret-title">Число для форсирования</div>
+      <form id="secretForm" class="secret-form">
+        <input
+          id="secretInput"
+          class="secret-input"
+          type="text"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          autocomplete="one-time-code"
+          enterkeyhint="done"
+          placeholder="Например 1234"
+        />
+        <div class="secret-actions">
+          <button type="button" id="secretCancel" class="secret-btn">Отмена</button>
+          <button type="submit" id="secretSave" class="secret-btn secret-btn-primary">Сохранить</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     let secretDigits = [];
     let secretIndex = 0;
@@ -294,6 +378,10 @@
     const worldTab = document.getElementById("tab-world");
     const worldIcon = document.getElementById("icon-world");
     const timerTab = document.getElementById("tab-timer");
+    const secretModal = document.getElementById("secretModal");
+    const secretForm = document.getElementById("secretForm");
+    const secretInput = document.getElementById("secretInput");
+    const secretCancel = document.getElementById("secretCancel");
 
     let running = false;
     let startTs = 0;
@@ -321,6 +409,30 @@
       }
     }
     render(0);
+
+    function openSecretModal(){
+      secretInput.value = secretDigits.join("");
+      secretModal.classList.add("open");
+      setTimeout(()=>{ secretInput.focus(); secretInput.select(); }, 0);
+    }
+
+    function closeSecretModal(){
+      secretModal.classList.remove("open");
+    }
+
+    function applySecretDigits(){
+      const raw = secretInput.value || "";
+      const digits = raw.replace(/\D/g, "");
+      secretDigits = [];
+      secretIndex = 0;
+      if(digits.length >= 2){
+        const even = digits.length % 2 === 0 ? digits : (digits + "0");
+        for(let i = 0; i < even.length; i += 2){
+          secretDigits.push(even.slice(i, i + 2));
+        }
+      }
+      closeSecretModal();
+    }
 
     function tick(){
       const now = performance.now();
@@ -411,16 +523,29 @@
       worldIcon.classList.toggle("rotate", secretMode);
     });
 
-    timerTab.addEventListener("click", ()=>{
-      const raw = window.prompt("Введите секретную последовательность (например 123456)", "") || "";
-      const digits = raw.replace(/\D/g,"");
-      secretDigits = [];
-      secretIndex = 0;
-      if(digits.length >= 2){
-        const even = digits.length % 2 === 0 ? digits : (digits + "0");
-        for(let i=0;i<even.length;i+=2){
-          secretDigits.push(even.slice(i, i+2));
-        }
+    timerTab.addEventListener("click", openSecretModal);
+
+    secretForm.addEventListener("submit", (event)=>{
+      event.preventDefault();
+      applySecretDigits();
+    });
+
+    secretCancel.addEventListener("click", ()=>{
+      closeSecretModal();
+      secretInput.value = secretDigits.join("");
+    });
+
+    secretModal.addEventListener("click", (event)=>{
+      if(event.target === secretModal){
+        closeSecretModal();
+        secretInput.value = secretDigits.join("");
+      }
+    });
+
+    document.addEventListener("keydown", (event)=>{
+      if(event.key === "Escape" && secretModal.classList.contains("open")){
+        closeSecretModal();
+        secretInput.value = secretDigits.join("");
       }
     });
 

@@ -50,6 +50,8 @@
       --btn-stop:#340e0d;
       --btn-stop-text:#be5046;
       --btn-stop-pressed:#1b0706;
+      --app-padding-inline-start: calc(30px + env(safe-area-inset-left));
+      --app-padding-inline-end: calc(30px + env(safe-area-inset-right));
       --time-digit-spacing: clamp(0.06em, 0.45vw, 0.12em);
       --time-cell-gap: clamp(0.12em, 0.85vw, 0.24em);
     }
@@ -83,7 +85,8 @@
       align-items:flex-end;
       margin: 0 auto 80px auto;
       gap: var(--time-cell-gap);
-      width: calc(100% - 60px);
+      width: 100%;
+      padding-inline: var(--app-padding-inline-start) var(--app-padding-inline-end);
       text-align:center;
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum" 1;
@@ -118,7 +121,7 @@
       display:flex;
       justify-content:space-between;
       align-items:center;
-      padding: 0 30px;
+      padding-inline: var(--app-padding-inline-start) var(--app-padding-inline-end);
       position: relative;
     }
     .btn{

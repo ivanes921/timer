@@ -78,7 +78,8 @@
       justify-content:center;
       align-items:flex-end;
       margin: 0 auto 80px auto;
-      letter-spacing: -1px;
+      letter-spacing: 0.05em;
+      gap: clamp(0.2em, 0.8vw, 0.35em);
       width: calc(100% - 60px);
       text-align:center;
       font-variant-numeric: tabular-nums;
@@ -93,8 +94,9 @@
     .time-val{
       font-variant-numeric: tabular-nums;
       font-feature-settings: "tnum" 1;
+      letter-spacing: 0.05em;
     }
-    .comma{padding:0 2px; position:relative; top:-4px;}
+    .comma{padding:0 clamp(0.05em, 0.4vw, 0.15em); position:relative; top:-4px;}
 
     /* КНОПКИ */
     .controls{

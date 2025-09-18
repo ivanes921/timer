@@ -49,6 +49,8 @@
       --btn-stop:#340e0d;
       --btn-stop-text:#be5046;
       --btn-stop-pressed:#1b0706;
+      --time-digit-spacing: clamp(0.06em, 0.45vw, 0.12em);
+      --time-cell-gap: clamp(0.12em, 0.85vw, 0.24em);
     }
 
     *{box-sizing:border-box; -webkit-tap-highlight-color: transparent;}
@@ -78,12 +80,35 @@
       justify-content:center;
       align-items:flex-end;
       margin: 0 auto 80px auto;
-      letter-spacing: -1px;
+      gap: var(--time-cell-gap);
       width: calc(100% - 60px);
       text-align:center;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
     }
-    .time span{display:inline-block; min-width:1ch;}
-    .comma{padding:0 2px; position:relative; top:-4px;}
+    .time span{
+      display:inline-flex;
+      justify-content:center;
+      align-items:flex-end;
+      flex: 0 0 auto;
+    }
+    .time .time-digits{
+      font-variant-numeric: inherit;
+      font-feature-settings: inherit;
+      letter-spacing: var(--time-digit-spacing);
+      flex: 0 0 calc(2ch + var(--time-digit-spacing));
+    }
+    .time .time-separator{
+      flex: 0 0 calc(0.78ch + var(--time-digit-spacing) * 0.25);
+      justify-content:center;
+      position:relative;
+      top:-4px;
+    }
+    .time-val{
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "tnum" 1;
+      letter-spacing: var(--time-digit-spacing);
+    }
 
     /* КНОПКИ */
     .controls{
@@ -168,7 +193,11 @@
   <div class="app">
     <div class="top">
       <div class="time">
-        <span id="mm">00</span><span class="comma">:</span><span id="ss">00</span><span class="comma">,</span><span id="cc">00</span>
+        <span id="mm" class="time-digits">00</span>
+        <span class="time-separator">:</span>
+        <span id="ss" class="time-digits">00</span>
+        <span class="time-separator">,</span>
+        <span id="cc" class="time-digits">00</span>
       </div>
 
       <div class="controls">

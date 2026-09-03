@@ -6,11 +6,13 @@
   const form = document.getElementById("secretForm");
   const card = document.querySelector(".secret-modal-card");
   const modal = document.getElementById("secretModal");
-  const saveBtn = document.getElementById("secretSave");
-  const cancelBtn = document.getElementById("secretCancel");
   const timerTab = document.getElementById("tab-timer");
   const lapsBox = document.getElementById("laps");
   if (!input || !form || !card || !modal) return;
+
+  // Keep the original input alive by reference. The original app's
+  // applySecretDigits() closes over this exact element.
+  const originalSecretInput = input;
 
   const read = (key, fallback) => {
     try { const v = JSON.parse(localStorage.getItem(key)); return v ?? fallback; } catch (_) { return fallback; }
@@ -24,16 +26,11 @@
   let last = String(read(LAST_KEY, ""));
 
   function clean(v) { return String(v || "").replace(/\D/g, ""); }
-  function display(v) {
-    const d = clean(v);
-    return d || "—";
-  }
 
-  const originalCardHTML = card.innerHTML;
   card.innerHTML = `
     <div id="secretTitle" class="secret-title">Число для форсирования</div>
     <form id="secretFormEnhanced" class="secret-form">
-      <input id="secretInputEnhanced" class="secret-input" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" enterkeyhint="done" placeholder="Например 1234" />
+      <input id="secretInputEnhanced" class="secret-input" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="one-time-code" enterkeyhint="done" placeholder="Например 123456" />
       <div class="secret-actions">
         <button type="button" id="secretCancelEnhanced" class="secret-btn">Отмена</button>
         <button type="submit" id="secretSaveEnhanced" class="secret-btn secret-btn-primary">Применить</button>
@@ -41,7 +38,7 @@
     </form>
     <div class="preset-heading">Сохранённые числа</div>
     <div id="presetList" class="preset-list"></div>
-    <div class="preset-hint">Нажмите на число, чтобы выбрать его. Свайп/кнопка удаления — для удаления.</div>
+    <div class="preset-hint">Например, 123456 даст по очереди 12 → 34 → 56 → 12… в сотых секунды. Режим отключается через «Мировые часы».</div>
   `;
 
   const inp = document.getElementById("secretInputEnhanced");
@@ -63,26 +60,25 @@
     presets.forEach((value, index) => {
       const row = document.createElement("div");
       row.className = "preset-row";
+
       const choose = document.createElement("button");
       choose.type = "button";
       choose.className = "preset-value";
       choose.textContent = value;
-      choose.addEventListener("click", () => {
-        inp.value = value;
-        last = value;
-        write(LAST_KEY, last);
-        applyValue(value);
-      });
+      choose.addEventListener("click", () => applyValue(value));
+
       const del = document.createElement("button");
       del.type = "button";
       del.className = "preset-delete";
       del.setAttribute("aria-label", "Удалить");
       del.textContent = "×";
-      del.addEventListener("click", () => {
+      del.addEventListener("click", (event) => {
+        event.stopPropagation();
         presets.splice(index, 1);
         savePresets();
         renderPresets();
       });
+
       row.append(choose, del);
       list.appendChild(row);
     });
@@ -91,37 +87,38 @@
   function applyValue(value) {
     const v = clean(value);
     if (!v) return;
+
+    // This is the important part: update the ORIGINAL input that the
+    // original applySecretDigits() function actually reads.
+    originalSecretInput.value = v;
     inp.value = v;
     last = v;
     write(LAST_KEY, last);
-    /* Let the original app's state update without requiring a rewrite of its main code. */
-    const nativeInput = document.getElementById("secretInput");
-    if (nativeInput) nativeInput.value = v;
+
     try {
-      if (typeof window.applySecretDigits === "function") window.applySecretDigits();
+      if (typeof window.applySecretDigits === "function") {
+        window.applySecretDigits();
+      }
     } catch (_) {}
+
     modal.classList.remove("open");
   }
 
   frm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const value = clean(inp.value);
-    if (!value) return;
-    applyValue(value);
+    applyValue(inp.value);
   });
 
   cancel.addEventListener("click", () => {
     modal.classList.remove("open");
   });
 
-  /* Capture the existing Timer tab click in the bubbling phase, replacing the old modal contents. */
   if (timerTab) timerTab.addEventListener("click", () => {
     inp.value = last || "";
     renderPresets();
     setTimeout(() => { inp.focus(); inp.select(); }, 0);
   });
 
-  /* Keep the stored last value when the original app opens the modal. */
   const observer = new MutationObserver(() => {
     if (modal.classList.contains("open")) {
       inp.value = last || "";
@@ -130,7 +127,6 @@
   });
   observer.observe(modal, { attributes: true, attributeFilter: ["class"] });
 
-  /* Add a tiny Save button to the current value when the modal is open. */
   const actions = frm.querySelector(".secret-actions");
   const addBtn = document.createElement("button");
   addBtn.type = "button";
@@ -147,11 +143,11 @@
   });
   actions.insertBefore(addBtn, actions.lastElementChild);
 
-  /* Make lap rows duplicate the visible forced value after Stop / Lap. */
   function visibleTime() {
     const a = id => document.getElementById(id)?.textContent || "00";
     return `${a("mm")}:${a("ss")},${a("cc")}`;
   }
+
   function syncFirstLap() {
     const row = lapsBox?.firstElementChild;
     if (row) {
@@ -159,12 +155,12 @@
       if (val) val.textContent = visibleTime();
     }
   }
+
   const right = document.getElementById("rightBtn");
   const left = document.getElementById("leftBtn");
   if (right) right.addEventListener("click", () => setTimeout(syncFirstLap, 0));
   if (left) left.addEventListener("click", () => setTimeout(syncFirstLap, 0));
 
-  /* Add a visible remove/save action without changing the original secret mechanism. */
   const style = document.createElement("style");
   style.textContent = `
     .secret-modal-card { max-height: min(78vh, 620px); overflow:auto; }
